@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Typing Speed Test =</title>
+
+<style>
+ 
+    body {
+        background: linear-gradient(135deg, #6a11cb, #2575fc);
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 0;
+        color: white;
+    }
+
+    h2 {
+        text-align: center;
+        margin: 20px 0;
+        font-size: 40px;
+        text-shadow: 2px 2px 10px black;
+    }
+
+   
+    .box {
+        width: 60%;
+        max-width: 1000px;     
+        margin: auto;
+        padding: 25px;
+        background: rgba(255, 255, 255, 0.15);
+        border-radius: 15px;
+        backdrop-filter: blur(6px);
+        box-shadow: 0px 0px 20px black;
+
+    }
+     button {
+        padding: 10px 18px;
+        margin: 5px 3px;
+        background: #ffcc00;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        color: black;
+        font-weight: bold;
+        transition: 0.3s;
+        font-size: 16px;
+    }
+    button:hover {
+        background: #ffe066;
+    }
+
+    .paragraph {
+        background: rgba(0, 0, 0, 0.35);
+        padding: 16px;
+        border-radius: 8px;
+        min-height: 50px;
+        font-size: 20px;
+        line-height: 1.5;
+    }
+
+    textarea {
+        width: 70%;
+        padding: 15px;
+        height: 100px;
+        border-radius: 8px;
+        outline: none;
+        border: none;
+        font-size: 18px;
+        margin-top: 12px;
+    }
+
+    .correct { color: #00ff00; font-weight: bold; }
+    .incorrect { color: #ff3333; font-weight: bold; }
+
+    .stats {
+        display: flex;
+        justify-content: space-around;
+        font-size: 22px;
+        margin-top: 15px;
+    }
+
+    .result {
+        font-size: 26px;
+        margin-top: 20px;
+        text-align: center;
+        font-weight: bold;
+        color: yellow;
+    }
+</style>
+
+
+   
+
+
+</head>
+<body>
+
+<h2>Typing Speed Test</h2>
+
+<div class="box">
+
+    <h3>Select Paragraph Difficulty</h3>
+
+    <button onclick="loadParagraphType('normal')">Normal</button>
+    <button onclick="loadParagraphType('maximum')">Maximum</button>
+    <button onclick="loadParagraphType('hard')">Hard</button>
+
+    <p id="selectedType" style="font-size:20px; margin-top:10px;">Selected: None</p>
+
+    <h3>Paragraph</h3>
+
+    <p id="paragraph" class="paragraph"></p>
+
+    <textarea id="inputField" placeholder="Start typing..." disabled></textarea>
+
+    <div class="stats">
+        <p>⏳ Time Left: <span id="time">60</span>s</p>
+        <p>⚡ WPM: <span id="wpm">0</span></p>
+        <p>🎯 Accuracy: <span id="accuracy">0</span>%</p>
+    </div>
+
+    <div style="text-align:center; margin-top:15px;">
+        <button id="startBtn">Start Test</button>
+        <button onclick="restartTest()">Restart</button>
+    </div>
+
+    <p id="result" class="result"></p>
+
+</div>
+
+<script>
+
+
+const normal = [
+    "The quick brown fox jumps over the lazy dog.",
+    "Practice typing every day to improve your speed.",
+    "The sun is shining brightly in the blue sky.",
+    "Typing helps improve focus and productivity.",
+    "Learning new skills keeps your mind active."
+];
+
+const maximum = [
+    "Typing faster requires daily practice combined with accuracy.",
+    "A good typing speed helps complete tasks quicker and efficiently.",
+    "Maintain a comfortable posture for long typing sessions.",
+    "Typing skill improves finger coordination and memory.",
+    "Consistency is the key to mastering typing speed."
+];
+
+const hard = [
+    "Professional typists focus on both speed and accuracy.",
+    "Challenging tests include punctuation and complex vocabulary.",
+    "Typing long paragraphs improves concentration drastically.",
+    "Advanced tests require technical and scientific sentences.",
+    "Typing under pressure helps build real-world typing ability."
+];
+
+
+let selectedParagraph = "";
+let timer = 60;
+let timerInterval;
+let charIndex = 0;
+let mistakes = 0;
+
+
+const paragraphElement = document.getElementById("paragraph");
+const inputField = document.getElementById("inputField");
+const timeDisplay = document.getElementById("time");
+const wpmDisplay = document.getElementById("wpm");
+const accuracyDisplay = document.getElementById("accuracy");
+const resultDisplay = document.getElementById("result");
+
+
+function loadParagraphType(type) {
+    document.getElementById("selectedType").innerText = "Selected: " + type;
+
+    if (type === "normal") selectedParagraph = normal[Math.floor(Math.random() * normal.length)];
+    if (type === "maximum") selectedParagraph = maximum[Math.floor(Math.random() * maximum.length)];
+    if (type === "hard") selectedParagraph = hard[Math.floor(Math.random() * hard.length)];
+
+    paragraphElement.innerHTML = "";
+    selectedParagraph.split("").forEach(char => {
+        paragraphElement.innerHTML += `<span>${char}</span>`;
+    });
+
+    inputField.disabled = true;
+    inputField.value = "";
+    charIndex = 0;
+    mistakes = 0;
+    timer = 60;
+    timeDisplay.textContent = timer;
+}
+
+
+document.getElementById("startBtn").onclick = function () {
+    if (!selectedParagraph) {
+        alert("Please select a paragraph type!");
+        return;
+    }
+
+    inputField.disabled = false;
+    inputField.focus();
+
+    startTimer();
+};
+
+
+function startTimer() {
+    timerInterval = setInterval(() => {
+        timer--;
+        timeDisplay.textContent = timer;
+
+        if (timer === 0) endTest();
+
+    }, 1000);
+}
+
+
+inputField.addEventListener("input", () => {
+    const characters = paragraphElement.querySelectorAll("span");
+    let typedChar = inputField.value.charAt(charIndex);
+
+    if (typedChar === characters[charIndex].innerText) {
+        characters[charIndex].classList.add("correct");
+    } else {
+        characters[charIndex].classList.add("incorrect");
+        mistakes++;
+    }
+
+    charIndex++;
+
+    if (charIndex === characters.length) endTest();
+});
+
+
+function endTest() {
+    clearInterval(timerInterval);
+    inputField.disabled = true;
+
+    let totalTyped = charIndex;
+    let wpm = Math.round((totalTyped / 5) / ((60 - timer) / 60));
+    let accuracy = Math.round(((totalTyped - mistakes) / totalTyped) * 100);
+
+    wpmDisplay.textContent = wpm;
+    accuracyDisplay.textContent = accuracy;
+
+    let stars =
+        wpm > 40 ? "⭐⭐⭐" :
+        wpm > 25 ? "⭐⭐" : "⭐";
+
+    resultDisplay.innerHTML = `Result: ${stars}<br>WPM: ${wpm} | Accuracy: ${accuracy}%`;
+}
+
+
+function restartTest() {
+    window.location.reload();
+}
+</script>
+
+</body>
+</html>
